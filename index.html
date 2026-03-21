@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRIT OPTIMIZER — Peak Critical Hit Performance</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #4f8ef7;
+  --accent2: #6ee7f7;
+  --bg: #080c14;
+  --card-bg: #0d1525;
+  --card-border: rgba(79,142,247,0.18);
+  --text: #e8eaf6;
+  --muted: #6b7a99;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; min-height: 100vh; }
+
+.stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(79,142,247,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 30% at 80% 110%, rgba(110,231,247,0.07) 0%, transparent 60%); }
+.stars::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(1px 1px at 15% 20%, rgba(255,255,255,0.55) 0%, transparent 100%), radial-gradient(1px 1px at 35% 8%, rgba(255,255,255,0.4) 0%, transparent 100%), radial-gradient(1.5px 1.5px at 60% 30%, rgba(255,255,255,0.3) 0%, transparent 100%), radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,0.5) 0%, transparent 100%), radial-gradient(1px 1px at 25% 55%, rgba(255,255,255,0.25) 0%, transparent 100%), radial-gradient(1.5px 1.5px at 90% 45%, rgba(255,255,255,0.35) 0%, transparent 100%), radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.3) 0%, transparent 100%), radial-gradient(1px 1px at 10% 85%, rgba(255,255,255,0.4) 0%, transparent 100%); }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 18px 48px; background: rgba(8,12,20,0.75); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(79,142,247,0.08); }
+.nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; }
+.nav-logo .icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; }
+.nav-badge { font-family: 'Space Mono', monospace; font-size: 0.7rem; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(79,142,247,0.4); color: var(--accent); background: rgba(79,142,247,0.07); display: flex; align-items: center; gap: 6px; }
+.nav-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+.hero { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 120px 24px 80px; }
+.hero-pill { font-family: 'Space Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 8px 20px; border-radius: 20px; border: 1px solid rgba(79,142,247,0.35); background: rgba(79,142,247,0.07); color: var(--accent2); margin-bottom: 36px; display: inline-flex; align-items: center; gap: 8px; animation: fadeUp 0.7s ease both; }
+.hero-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.hero h1 { font-size: clamp(2.8rem, 7vw, 5.5rem); font-weight: 900; line-height: 1.08; letter-spacing: -0.03em; animation: fadeUp 0.7s 0.08s ease both; }
+.hero h1 span { color: var(--accent); }
+.hero .sub { color: var(--muted); font-size: 1.05rem; margin-top: 22px; max-width: 440px; line-height: 1.65; animation: fadeUp 0.7s 0.16s ease both; }
+.hero-cta { margin-top: 40px; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.7s 0.24s ease both; }
+.scroll-hint { margin-top: 64px; color: var(--muted); font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 8px; animation: fadeUp 0.7s 0.4s ease both; }
+.scroll-arrow { width: 18px; height: 18px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); animation: bounce 1.6s infinite; }
+@keyframes bounce { 0%,100%{transform:rotate(45deg) translateY(0);} 50%{transform:rotate(45deg) translateY(5px);} }
+
+.btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #080c14; font-weight: 800; font-size: 0.95rem; padding: 14px 32px; border-radius: 10px; border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; display: inline-block; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(79,142,247,0.35); }
+.btn-ghost { color: var(--text); font-weight: 700; font-size: 0.95rem; padding: 14px 32px; border-radius: 10px; border: 1px solid rgba(79,142,247,0.3); background: rgba(79,142,247,0.06); cursor: pointer; transition: border-color 0.2s, background 0.2s; text-decoration: none; display: inline-block; }
+.btn-ghost:hover { border-color: var(--accent); background: rgba(79,142,247,0.12); }
+
+section { position: relative; z-index: 1; }
+.inner { max-width: 1100px; margin: 0 auto; padding: 80px 48px 100px; }
+.inner-narrow { max-width: 800px; margin: 0 auto; padding: 80px 48px 100px; }
+.section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+.section-title { font-size: clamp(1.9rem, 4vw, 2.9rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 12px; }
+.section-title span { color: var(--accent); }
+.section-desc { color: var(--muted); font-size: 0.97rem; max-width: 500px; line-height: 1.7; margin-bottom: 52px; }
+
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.on { opacity: 1; transform: none; }
+
+.stats-bar { position: relative; z-index: 1; border-top: 1px solid rgba(79,142,247,0.08); border-bottom: 1px solid rgba(79,142,247,0.08); padding: 52px 48px; }
+.stats-inner { max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-around; }
+.stat { text-align: center; padding: 16px 28px; }
+.stat-num { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.03em; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-label { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 26px 24px 22px; transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s; }
+.card:hover { border-color: rgba(79,142,247,0.5); transform: translateY(-4px); box-shadow: 0 16px 40px rgba(79,142,247,0.1); }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.card-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.2); display: flex; align-items: center; justify-content: center; }
+.card-tag { font-family: 'Space Mono', monospace; font-size: 0.63rem; letter-spacing: 0.1em; padding: 3px 9px; border-radius: 6px; font-weight: 700; }
+.tag-hud    { background: rgba(79,142,247,0.15); color: var(--accent); }
+.tag-stats  { background: rgba(110,231,247,0.12); color: var(--accent2); }
+.tag-audio  { background: rgba(74,222,128,0.12); color: #4ade80; }
+.tag-legit  { background: rgba(251,191,36,0.12); color: #fbbf24; }
+.card h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; }
+.card p { color: var(--muted); font-size: 0.88rem; line-height: 1.65; margin-bottom: 18px; }
+.card-dl { display: inline-flex; align-items: center; gap: 7px; color: var(--accent); font-size: 0.83rem; font-weight: 700; text-decoration: none; border: none; background: none; cursor: pointer; padding: 0; transition: gap 0.2s; }
+.card-dl:hover { gap: 11px; }
+.card-dl svg { width: 15px; height: 15px; }
+
+.cl-list { margin-top: 40px; display: flex; flex-direction: column; gap: 14px; }
+.cl-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 18px 22px; display: flex; align-items: flex-start; gap: 16px; }
+.cl-ver { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--accent); background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.2); padding: 3px 9px; border-radius: 6px; white-space: nowrap; margin-top: 2px; }
+.cl-text { color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
+.cl-text strong { color: var(--text); }
+
+.testi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-top: 48px; }
+.testi-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 22px 20px; transition: border-color 0.25s, transform 0.25s; }
+.testi-card:hover { border-color: rgba(79,142,247,0.4); transform: translateY(-3px); }
+.testi-stars { display: flex; gap: 3px; margin-bottom: 14px; }
+.testi-stars span { width: 11px; height: 11px; background: #fbbf24; display: inline-block; clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); }
+.testi-text { color: var(--muted); font-size: 0.87rem; line-height: 1.7; margin-bottom: 18px; }
+.testi-author { display: flex; align-items: center; gap: 10px; }
+.testi-avatar { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 900; color: #080c14; }
+.testi-name { font-weight: 700; font-size: 0.87rem; }
+.testi-tag { color: var(--muted); font-size: 0.73rem; font-family: 'Space Mono', monospace; }
+
+.install-steps { margin-top: 48px; }
+.install-step { display: flex; gap: 22px; align-items: flex-start; padding: 26px 0; border-bottom: 1px solid rgba(79,142,247,0.08); }
+.install-step:last-child { border-bottom: none; }
+.step-num { width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0; background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.25); display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 0.85rem; color: var(--accent); }
+.step-content h4 { font-size: 0.97rem; font-weight: 800; margin-bottom: 6px; }
+.step-content p { color: var(--muted); font-size: 0.87rem; line-height: 1.65; }
+.step-code { margin-top: 10px; background: rgba(0,0,0,0.4); border: 1px solid rgba(79,142,247,0.15); border-radius: 8px; padding: 9px 14px; font-family: 'Space Mono', monospace; font-size: 0.73rem; color: var(--accent2); }
+
+.pvp-cert { display: flex; align-items: center; gap: 20px; background: var(--card-bg); border: 1px solid rgba(79,142,247,0.4); border-radius: 16px; padding: 28px 28px; box-shadow: 0 0 40px rgba(79,142,247,0.08); }
+.pvp-cert-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(79,142,247,0.12); border: 1px solid rgba(79,142,247,0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pvp-cert-body { flex: 1; }
+.pvp-cert-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 6px; }
+.pvp-cert-desc { color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
+.pvp-cert-badge { font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(79,142,247,0.5); color: var(--accent); background: rgba(79,142,247,0.1); white-space: nowrap; font-weight: 700; }
+
+ display: flex; flex-direction: column; gap: 10px; }
+.faq-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; }
+.faq-q { width: 100%; background: none; border: none; color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.93rem; font-weight: 700; padding: 18px 20px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; transition: background 0.2s; }
+.faq-q:hover { background: rgba(79,142,247,0.05); }
+.faq-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--accent); transition: transform 0.3s; }
+.faq-item.open .faq-icon { transform: rotate(45deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.25s; color: var(--muted); font-size: 0.87rem; line-height: 1.7; padding: 0 20px; }
+.faq-item.open .faq-a { max-height: 160px; padding: 0 20px 18px; }
+
+.cta-section { position: relative; z-index: 1; text-align: center; padding: 80px 24px 100px; }
+.cta-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 600px; height: 300px; background: radial-gradient(ellipse, rgba(79,142,247,0.1) 0%, transparent 70%); pointer-events: none; }
+.cta-section h2 { font-size: clamp(1.8rem, 4vw, 2.9rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+.cta-section h2 span { color: var(--accent); }
+.cta-section > p { color: var(--muted); margin-bottom: 32px; font-size: 0.97rem; }
+.cta-hint { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); margin-top: 14px; }
+
+footer { position: relative; z-index: 1; border-top: 1px solid rgba(79,142,247,0.08); padding: 26px 48px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.footer-logo { font-weight: 800; font-size: 0.97rem; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { color: var(--muted); font-size: 0.83rem; text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+.footer-right { color: var(--muted); font-size: 0.75rem; font-family: 'Space Mono', monospace; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:none;} }
+@media (max-width: 600px) { nav { padding: 14px 20px; } .inner, .inner-narrow { padding: 60px 20px 70px; } .stats-bar { padding: 36px 20px; } footer { flex-direction: column; text-align: center; padding: 24px 20px; } }
+</style>
+</head>
+<body>
+
+<div class="stars"></div>
+
+<nav>
+  <div class="nav-logo">
+    <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+    CRIT OPTIMIZER
+  </div>
+  <div class="nav-badge"><span class="dot"></span><span data-cfg="version">v1.3.0</span> &nbsp;·&nbsp; PVP GUIDE APPROVED</div>
+</nav>
+
+<div class="hero">
+  <div class="hero-pill"><span class="dot"></span><span data-cfg="mcVersion">FABRIC 1.21.11 ONLY</span></div>
+  <h1>Critical hits, made<br><span>effortlessly consistent.</span></h1>
+  <p class="sub">Real-time jump timing feedback, crit analytics, and audio cues. Not a cheat — approved by the PvP Guide Discord. Just better PvP.</p>
+  <div class="hero-cta">
+    <a href="#download" class="btn-primary">Download Now</a>
+    <a href="#features" class="btn-ghost">View Features</a>
+  </div>
+  <div class="scroll-hint"><span>scroll down</span><div class="scroll-arrow"></div></div>
+</div>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat reveal"><div class="stat-num">2.5×</div><div class="stat-label">More Crits</div></div>
+    <div class="stat reveal"><div class="stat-num">6</div><div class="stat-label">Modules</div></div>
+    <div class="stat reveal"><div class="stat-num">1.21.11</div><div class="stat-label">Fabric Support</div></div>
+    <div class="stat reveal"><div class="stat-num">✓</div><div class="stat-label">PvP Guide Approved</div></div>
+  </div>
+</div>
+
+<section id="features">
+<div class="inner">
+  <div class="section-label">// core modules</div>
+  <h2 class="section-title reveal">Everything you need<br><span>to crit more.</span></h2>
+  <p class="section-desc reveal">6 modules, each independently toggleable, lightweight, and built to help you land crits through real skill — zero automation.</p>
+  <div class="cards">
+    <div class="card reveal">
+      <div class="card-header">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <span class="card-tag tag-hud">HUD</span>
+      </div>
+      <h3>Jump Timing HUD</h3>
+      <p>A precision on-screen arc indicator shows exactly where you are in your jump. Hit the green zone and you're guaranteed a crit. Configurable position, opacity, and scale.</p>
+      <a href="#download" class="card-dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Download</a>
+    </div>
+    <div class="card reveal">
+      <div class="card-header">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <span class="card-tag tag-stats">STATS</span>
+      </div>
+      <h3>Post-Fight Analytics</h3>
+      <p>After every fight, get a full breakdown — crits landed, crit rate %, and best streak. Track your improvement session by session and see exactly where your timing slips.</p>
+      <a href="#download" class="card-dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Download</a>
+    </div>
+    <div class="card reveal">
+      <div class="card-header">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <span class="card-tag tag-audio">AUDIO</span>
+      </div>
+      <h3>Crit Sound Cues</h3>
+      <p>A subtle audio cue fires the moment you enter the crit window. Train your ears alongside your eyes and build the kind of muscle memory that kicks in even under pressure.</p>
+      <a href="#download" class="card-dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Download</a>
+    </div>
+    <div class="card reveal">
+      <div class="card-header">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <span class="card-tag tag-legit">LEGIT</span>
+      </div>
+      <h3>Zero Automation</h3>
+      <p>CRIT OPTIMIZER never presses keys for you, never modifies packets. It is not considered a cheat — approved by the PvP Guide Discord.</p>
+      <a href="#download" class="card-dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Download</a>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="inner">
+  <div class="section-label">// changelog</div>
+  <h2 class="section-title reveal">What's <span>new.</span></h2>
+  <div class="cl-list">
+    <div class="cl-item reveal"><span class="cl-ver">v1.3.0</span><div class="cl-text"><strong>Major Update</strong> — Added post-fight analytics panel. New crit streak HUD element. Confirmed Sodium & Iris compatibility.</div></div>
+    <div class="cl-item reveal"><span class="cl-ver">v1.2.1</span><div class="cl-text"><strong>Hotfix</strong> — Fixed HUD rendering glitch on dimension switch. Improved arc indicator accuracy on high-ping servers.</div></div>
+    <div class="cl-item reveal"><span class="cl-ver">v1.2.0</span><div class="cl-text"><strong>Feature Drop</strong> — Introduced audio crit cues module. Configurable volume and pitch. New green-zone flash on perfect timing.</div></div>
+    <div class="cl-item reveal"><span class="cl-ver">v1.1.0</span><div class="cl-text"><strong>Config Overhaul</strong> — Full in-game config screen. HUD position, opacity, scale, and color theme all adjustable without restarting.</div></div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="inner">
+  <div class="section-label">// community</div>
+  <h2 class="section-title reveal">Trusted by <span>thousands.</span></h2>
+  <p class="section-desc reveal">Real feedback from players who leveled up their crits.</p>
+  <div class="testi-grid">
+    <div class="testi-card reveal">
+      <div class="testi-stars"><span></span><span></span><span></span><span></span><span></span></div>
+      <p class="testi-text">"Went from 40% crit rate to consistent 85%+ in two hours. The arc indicator just clicks immediately. Never going back to playing without it."</p>
+      <div class="testi-author"><div class="testi-avatar">PK</div><div><div class="testi-name">p4nterKing</div><div class="testi-tag">Hypixel SMP</div></div></div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="testi-stars"><span></span><span></span><span></span><span></span><span></span></div>
+      <p class="testi-text">"The audio cue is insane for muscle memory. After a week I don't even look at the HUD anymore — I just hear the cue and swing. Actual skill trainer."</p>
+      <div class="testi-author"><div class="testi-avatar">VX</div><div><div class="testi-name">v3loxia</div><div class="testi-tag">Lifesteal SMP</div></div></div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="testi-stars"><span></span><span></span><span></span><span></span><span></span></div>
+      <p class="testi-text">"Analytics showed me exactly where my timing broke down in long fights. Fixed it within a day. This mod is genuinely a coaching tool, not a cheat."</p>
+      <div class="testi-author"><div class="testi-avatar">NZ</div><div><div class="testi-name">n3xuz</div><div class="testi-tag">Vanilla SMP</div></div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+
+<section>
+<div class="inner-narrow">
+  <div class="pvp-cert reveal">
+    <div class="pvp-cert-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div>
+    <div class="pvp-cert-body">
+      <div class="pvp-cert-title">PvP Guide Certified</div>
+      <div class="pvp-cert-desc">Reviewed and approved by the PvP Guide Discord. CRIT OPTIMIZER is not considered a cheat — it's a skill tool.</div>
+    </div>
+    <div class="pvp-cert-badge">CERTIFIED</div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="inner-narrow">
+  <div class="section-label">// faq</div>
+  <h2 class="section-title reveal">Common <span>questions.</span></h2>
+  <div class="faq-list">
+
+    <div class="faq-item reveal"><button class="faq-q">Does it work with Sodium and Iris?<svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="faq-a">Fully compatible. The HUD uses a lightweight canvas overlay that doesn't interfere with any rendering pipeline. Tested and confirmed with Sodium, Iris, and Indium.</div></div>
+    <div class="faq-item reveal"><button class="faq-q">Which Minecraft version does this support?<svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="faq-a">Fabric 1.21.11 only. Make sure you have both Fabric Loader and Fabric API installed for that exact version before dropping in the .jar.</div></div>
+    <div class="faq-item reveal"><button class="faq-q">Is it free?<svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="faq-a">Completely free. No paid tiers, no locked features. Join the Discord to get notified when updates drop.</div></div>
+    <div class="faq-item reveal"><button class="faq-q">How do I update?<svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="faq-a">Delete the old .jar and drop in the new one. Your config is stored in .minecraft/config/critoptimizer/ and carries over automatically.</div></div>
+  </div>
+</div>
+</section>
+
+<section id="download">
+<div class="cta-section">
+  <div class="cta-glow"></div>
+  <h2 class="reveal">Ready to <span>crit every swing?</span></h2>
+  <p class="reveal">Free download. No account needed. Fabric 1.21.11.</p>
+  <div class="reveal"><a href="#" class="btn-primary" data-cfg="mainDownload"><span data-cfg="downloadBtn">Download v1.3.0</span></a></div>
+  <div class="cta-hint reveal">Fabric 1.21.11 only &nbsp;·&nbsp; Free forever &nbsp;·&nbsp; PvP Guide Approved</div>
+</div>
+</section>
+
+<footer>
+  <div class="footer-logo">CRIT OPTIMIZER</div>
+  <div class="footer-links"><a href="#">Discord</a><a href="#">GitHub</a><a href="#">Modrinth</a><a href="#">FAQ</a></div>
+  <div class="footer-right">v1.3.0 · Fabric 1.21.11 · PvP Guide Approved</div>
+</footer>
+
+<script>
+const CONFIG = {
+  modName:      "CRIT OPTIMIZER",
+  version:      "v1.3.0",
+  mcVersion:    "Fabric 1.21.11",
+  mainDownload: "#",
+
+  navLinks: [
+    { label: "Discord",  url: "#" },
+    { label: "GitHub",   url: "#" },
+    { label: "Modrinth", url: "#" },
+    { label: "FAQ",      url: "#" },
+  ],
+
+  stats: [
+    { num: "2.5×",  label: "More Crits"      },
+    { num: "6",     label: "Modules"          },
+    { num: "1.21.11",label: "Fabric Support"   },
+    { num: "100%",  label: "Server Safe"      },
+  ],
+
+  modules: [
+    {
+      tag: "HUD", tagClass: "tag-hud",
+      icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+      name: "Jump Timing HUD",
+      desc: "A precision on-screen arc indicator shows exactly where you are in your jump. Hit the green zone and you're guaranteed a crit. Configurable position, opacity, and scale.",
+      downloadUrl: "#",
+    },
+    {
+      tag: "STATS", tagClass: "tag-stats",
+      icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+      name: "Post-Fight Analytics",
+      desc: "After every fight, get a full breakdown — crits landed, crit rate %, and best streak. Track your improvement session by session and see exactly where your timing slips.",
+      downloadUrl: "#",
+    },
+    {
+      tag: "AUDIO", tagClass: "tag-audio",
+      icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+      name: "Crit Sound Cues",
+      desc: "A subtle audio cue fires the moment you enter the crit window. Train your ears alongside your eyes and build the kind of muscle memory that kicks in even under pressure.",
+      downloadUrl: "#",
+    },
+    {
+      tag: "LEGIT", tagClass: "tag-legit",
+      icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+      name: "Zero Automation",
+      desc: "CRIT OPTIMIZER never presses keys for you, never modifies packets. It is not considered a cheat — approved by the PvP Guide Discord.",
+      downloadUrl: "#",
+    },
+  ],
+
+  changelog: [
+    { ver: "v1.3.0", type: "Major Update",    text: "Added post-fight analytics panel. New crit streak HUD element. Confirmed Sodium & Iris compatibility." },
+    { ver: "v1.2.1", type: "Hotfix",          text: "Fixed HUD rendering glitch on dimension switch. Improved arc indicator accuracy on high-ping servers." },
+    { ver: "v1.2.0", type: "Feature Drop",    text: "Introduced audio crit cues module. Configurable volume and pitch. New green-zone flash on perfect timing." },
+    { ver: "v1.1.0", type: "Config Overhaul", text: "Full in-game config screen. HUD position, opacity, scale, and color theme all adjustable without restarting." },
+  ],
+
+  testimonials: [
+    { initials: "PK", name: "p4nterKing", server: "Hypixel SMP",   text: "Went from 40% crit rate to consistent 85%+ in two hours. The arc indicator just clicks immediately. Never going back to playing without it." },
+    { initials: "VX", name: "v3loxia",    server: "Lifesteal SMP",  text: "The audio cue is insane for muscle memory. After a week I don't even look at the HUD anymore — I just hear the cue and swing. Actual skill trainer." },
+    { initials: "NZ", name: "n3xuz",      server: "Vanilla SMP",    text: "Analytics showed me exactly where my timing broke down in long fights. Fixed it within a day. This mod is genuinely a coaching tool, not a cheat." },
+  ],
+
+  faq: [
+
+    { q: "Does it work with Sodium and Iris?",                a: "Fully compatible. The HUD uses a lightweight canvas overlay that doesn't interfere with any rendering pipeline. Tested and confirmed with Sodium, Iris, and Indium." },
+    { q: "Which Minecraft version does this support?",        a: "Fabric 1.21.11 only. Make sure you have both Fabric Loader and Fabric API installed for that exact version before dropping in the .jar." },
+    { q: "Is it free?",                                       a: "Completely free. No paid tiers, no locked features. Join the Discord to get notified when updates drop." },
+    { q: "How do I update?",                                  a: "Delete the old .jar and drop in the new one. Your config is stored in .minecraft/config/critoptimizer/ and carries over automatically." },
+  ],
+};
+
+const dlIcon   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>`;
+const plusIcon = `<svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+const stars    = `<span></span><span></span><span></span><span></span><span></span>`;
+
+document.title = `${CONFIG.modName} — Peak Critical Hit Performance`;
+document.querySelectorAll('[data-cfg="version"]').forEach(el => el.textContent = CONFIG.version);
+document.querySelectorAll('[data-cfg="mcVersion"]').forEach(el => el.textContent = CONFIG.mcVersion);
+document.querySelectorAll('[data-cfg="mainDownload"]').forEach(el => el.href = CONFIG.mainDownload);
+document.querySelectorAll('[data-cfg="downloadBtn"]').forEach(el => el.textContent = `Download ${CONFIG.version}`);
+
+const navEl = document.querySelector('.footer-links');
+if (navEl) navEl.innerHTML = CONFIG.navLinks.map(l => `<a href="${l.url}">${l.label}</a>`).join('');
+
+const fr = document.querySelector('.footer-right');
+if (fr) fr.textContent = `${CONFIG.version} · ${CONFIG.mcVersion} · PvP Guide Approved`;
+
+const statsEl = document.querySelector('.stats-inner');
+if (statsEl) statsEl.innerHTML = CONFIG.stats.map(s => `<div class="stat reveal"><div class="stat-num">${s.num}</div><div class="stat-label">${s.label}</div></div>`).join('');
+
+const cardsEl = document.querySelector('.cards');
+if (cardsEl) cardsEl.innerHTML = CONFIG.modules.map(m => `
+  <div class="card reveal">
+    <div class="card-header"><div class="card-icon">${m.icon}</div><span class="card-tag ${m.tagClass}">${m.tag}</span></div>
+    <h3>${m.name}</h3><p>${m.desc}</p>
+    <a href="${m.downloadUrl}" class="card-dl">${dlIcon}Download</a>
+  </div>`).join('');
+
+const clEl = document.querySelector('.cl-list');
+if (clEl) clEl.innerHTML = CONFIG.changelog.map(c => `
+  <div class="cl-item reveal"><span class="cl-ver">${c.ver}</span>
+  <div class="cl-text"><strong>${c.type}</strong> — ${c.text}</div></div>`).join('');
+
+const testiEl = document.querySelector('.testi-grid');
+if (testiEl) testiEl.innerHTML = CONFIG.testimonials.map(t => `
+  <div class="testi-card reveal">
+    <div class="testi-stars">${stars}</div>
+    <p class="testi-text">"${t.text}"</p>
+    <div class="testi-author"><div class="testi-avatar">${t.initials}</div>
+    <div><div class="testi-name">${t.name}</div><div class="testi-tag">${t.server}</div></div></div>
+  </div>`).join('');
+
+const faqEl = document.querySelector('.faq-list');
+if (faqEl) faqEl.innerHTML = CONFIG.faq.map(f => `
+  <div class="faq-item reveal">
+    <button class="faq-q">${f.q}${plusIcon}</button>
+    <div class="faq-a">${f.a}</div>
+  </div>`).join('');
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); obs.unobserve(e.target); } });
+}, { threshold: 0.05 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+document.querySelector('.faq-list').addEventListener('click', e => {
+  const btn = e.target.closest('.faq-q');
+  if (!btn) return;
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+});
+</script>
+</body>
+</html>
